@@ -6,10 +6,12 @@
  */
 
 class Game {
-  constructor(length = 6, width = 7) {
+  constructor(p1, p2, length = 6, width = 7) {
     this.length = length;
     this.width = width;
-    this.currPlayer = 1; // active player: 1 or 2
+    this.p1 = p1;
+    this.p2 = p2;
+    this.currPlayer = this.p1; // active player: 1 or 2
     this.board = []; // array of rows, each row is array of cells  (board[y][x])
     this.gameOver = false;
     this.makeBoard();
@@ -80,7 +82,8 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement("div");
     piece.classList.add("piece");
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.style.backgroundColor = this.currPlayer.color;
+    // piece.classList.add(`p${this.currPlayer}`);
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -117,7 +120,7 @@ class Game {
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      return this.endGame(`Player ${this.currPlayer.color} won!`);
     }
 
     // check for tie
@@ -126,7 +129,7 @@ class Game {
     }
 
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.p1 ? this.p2 : this.p1;
   }
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -192,7 +195,49 @@ class Game {
   }
 }
 
-new Game(6, 7);
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
+
+function selectColor() {
+  // check if valid color
+  function isColor(strColor) {
+    const s = new Option().style;
+    s.color = strColor;
+    return s.color == strColor;
+  }
+  const p1 = new Player(document.querySelector("#color1").value);
+
+  if (!isColor(p1.color)) {
+    alert("player 1 color must be valid");
+  }
+  const p2 = new Player(document.querySelector("#color2").value);
+  if (!isColor(p2.color)) {
+    alert("player 2 color must be valid");
+  }
+  if (p1.color === "" || p2.color === "") {
+    p1.color = "blue";
+    document.querySelector("#color1").value = "blue";
+    p2.color = "red";
+    document.querySelector("#color2").value = "red";
+  }
+
+  if (p1.color === p2.color) {
+    alert("colors must be different");
+  }
+  return [p1, p2];
+}
+
+document.querySelector("#form-btn").addEventListener("click", (e) => {
+  e.preventDefault();
+  selectColor();
+});
+
+// new Game(6, 7);
+
 document.querySelector("#restart").addEventListener("click", () => {
-  new Game();
+  const [p1, p2] = selectColor();
+  new Game(p1, p2);
 });

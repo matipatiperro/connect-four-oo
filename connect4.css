@@ -16,11 +16,11 @@
 }
 
 .piece.p1 {
-  background-color: red;
+  background-color: blue;
 }
 
 .piece.p2 {
-  background-color: blue;
+  background-color: red;
 }
 
 /* column-top is table row of clickable areas for each column */
@@ -31,4 +31,14 @@
 
 #column-top td:hover {
   background-color: gold;
+}
+
+#color-form {
+  margin-top: 1rem;
+}
+
+#restart {
+  display: block;
+  margin-left: 10rem;
+  margin-top: 2rem;
 }
