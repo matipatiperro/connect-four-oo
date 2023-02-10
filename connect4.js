@@ -5,13 +5,12 @@
  * board fills (tie)
  */
 
-const WIDTH = 7;
-const HEIGHT = 6;
-
-let currPlayer = 1; // active player: 1 or 2
-let board = []; // array of rows, each row is array of cells  (board[y][x])
 class Game {
-  constructor() {
+  constructor(length, width) {
+    this.length = length;
+    this.width = width;
+    this.currPlayer = 1; // active player: 1 or 2
+    this.board = []; // array of rows, each row is array of cells  (board[y][x])
     this.makeBoard();
     this.makeHtmlBoard();
   }
@@ -20,8 +19,8 @@ class Game {
    */
 
   makeBoard() {
-    for (let y = 0; y < HEIGHT; y++) {
-      board.push(Array.from({ length: WIDTH }));
+    for (let y = 0; y < this.length; y++) {
+      this.board.push(Array.from({ length: this.width }));
     }
   }
 
@@ -37,7 +36,7 @@ class Game {
     const bindedHandleCLick = this.handleClick.bind(this);
     top.addEventListener("click", bindedHandleCLick);
 
-    for (let x = 0; x < WIDTH; x++) {
+    for (let x = 0; x < this.width; x++) {
       const headCell = document.createElement("td");
       headCell.setAttribute("id", x);
       top.append(headCell);
@@ -46,10 +45,10 @@ class Game {
     board.append(top);
 
     // make main part of board
-    for (let y = 0; y < HEIGHT; y++) {
+    for (let y = 0; y < this.length; y++) {
       const row = document.createElement("tr");
 
-      for (let x = 0; x < WIDTH; x++) {
+      for (let x = 0; x < this.width; x++) {
         const cell = document.createElement("td");
         cell.setAttribute("id", `${y}-${x}`);
         row.append(cell);
@@ -62,8 +61,8 @@ class Game {
   /** findSpotForCol: given column x, return top empty y (null if filled) */
 
   findSpotForCol(x) {
-    for (let y = HEIGHT - 1; y >= 0; y--) {
-      if (!board[y][x]) {
+    for (let y = this.length - 1; y >= 0; y--) {
+      if (!this.board[y][x]) {
         return y;
       }
     }
@@ -75,7 +74,7 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement("div");
     piece.classList.add("piece");
-    piece.classList.add(`p${currPlayer}`);
+    piece.classList.add(`p${this.currPlayer}`);
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -101,26 +100,28 @@ class Game {
     }
 
     // place piece in board and add to HTML table
-    board[y][x] = currPlayer;
+    this.board[y][x] = this.currPlayer;
     this.placeInTable(y, x);
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${currPlayer} won!`);
+      return this.endGame(`Player ${this.currPlayer} won!`);
     }
 
     // check for tie
-    if (board.every((row) => row.every((cell) => cell))) {
-      return endGame("Tie!");
+    if (this.board.every((row) => row.every((cell) => cell))) {
+      return this.endGame("Tie!");
     }
 
     // switch players
-    currPlayer = currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
   }
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
 
   checkForWin() {
+    // _win function will lose reference to this, but i attached with call() when it is invoked
+    // another option would be to turn this into an arrow function which will keep the object caller
     function _win(cells) {
       // Check four cells to see if they're all color of current player
       //  - cells: list of four (y, x) cells
@@ -129,15 +130,15 @@ class Game {
       return cells.every(
         ([y, x]) =>
           y >= 0 &&
-          y < HEIGHT &&
+          y < this.length &&
           x >= 0 &&
-          x < WIDTH &&
-          board[y][x] === currPlayer
+          x < this.width &&
+          this.board[y][x] === this.currPlayer
       );
     }
 
-    for (let y = 0; y < HEIGHT; y++) {
-      for (let x = 0; x < WIDTH; x++) {
+    for (let y = 0; y < this.length; y++) {
+      for (let x = 0; x < this.width; x++) {
         // get "check list" of 4 cells (starting here) for each of the different
         // ways to win
         const horiz = [
@@ -166,7 +167,12 @@ class Game {
         ];
 
         // find winner (only checking each win-possibility as needed)
-        if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
+        if (
+          _win.call(this, horiz) ||
+          _win.call(this, vert) ||
+          _win.call(this, diagDR) ||
+          _win.call(this, diagDL)
+        ) {
           return true;
         }
       }
@@ -174,4 +180,4 @@ class Game {
   }
 }
 
-new Game();
+new Game(6, 7);
