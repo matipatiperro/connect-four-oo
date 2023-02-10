@@ -6,14 +6,16 @@
  */
 
 class Game {
-  constructor(length, width) {
+  constructor(length = 6, width = 7) {
     this.length = length;
     this.width = width;
     this.currPlayer = 1; // active player: 1 or 2
     this.board = []; // array of rows, each row is array of cells  (board[y][x])
+    this.gameOver = false;
     this.makeBoard();
     this.makeHtmlBoard();
   }
+
   /** makeBoard: create in-JS board structure:
    *   board = array of rows, each row is array of cells  (board[y][x])
    */
@@ -28,13 +30,17 @@ class Game {
 
   makeHtmlBoard() {
     const board = document.getElementById("board");
+    board.innerHTML = ""; // clear previous board
 
     // make column tops (clickable area for adding a piece to that column)
     const top = document.createElement("tr");
     top.setAttribute("id", "column-top");
     // bind is neeeded because addEvenListener has a callback so the calling object becomes the click event
-    const bindedHandleCLick = this.handleClick.bind(this);
-    top.addEventListener("click", bindedHandleCLick);
+    // const bindedHandleCLick = this.handleClick.bind(this);
+
+    // need to make this a Class property to access later on (remove event handler)
+    this.bindedHandleCLick = this.handleClick.bind(this);
+    top.addEventListener("click", this.bindedHandleCLick);
 
     for (let x = 0; x < this.width; x++) {
       const headCell = document.createElement("td");
@@ -84,12 +90,18 @@ class Game {
   /** endGame: announce game end */
 
   endGame(msg) {
+    this.gameOver = true;
+    const top = document.querySelector("#column-top");
+    // console.log(getEventListeners(top));
+    // console.log(this);
+    top.removeEventListener("click", this.bindedHandleCLick);
     alert(msg);
   }
 
   /** handleClick: handle click of column top to play piece */
 
   handleClick(evt) {
+    // if (this.gameOver) return; // a bit hacky, it would be better to skip entering this function altogether
     // get x from ID of clicked cell
     const x = +evt.target.id;
 
@@ -181,3 +193,6 @@ class Game {
 }
 
 new Game(6, 7);
+document.querySelector("#restart").addEventListener("click", () => {
+  new Game();
+});
